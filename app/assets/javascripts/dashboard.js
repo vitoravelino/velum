@@ -4,6 +4,26 @@ MinionPoller = {
     return setInterval(this.request, 5000);
   },
 
+  stateWeight: function(state) {
+    switch (state) {
+      case 'failed':
+        return 3;
+      case 'update':
+        return 2;
+      case 'pending':
+        return 1;
+      // applied, not_applied
+      default:
+        return 0;
+    }
+  },
+
+  sortMinions: function(minions) {
+    minions.sort(function(a, b) {
+      return MinionPoller.stateWeight(b.highstate)- MinionPoller.stateWeight(a.highstate);
+    });
+  },
+
   request: function() {
     $.ajax({
       url: $('.nodes-container').data('url'),
@@ -22,6 +42,8 @@ MinionPoller = {
         var unassignedMinions = data.unassigned_minions || [];
         if (MinionPoller.renderMode == "discovery") {
           minions = minions.concat(unassignedMinions);
+        } else {
+          MinionPoller.sortMinions(minions);
         }
 
         for (i = 0; i < minions.length; i++) {
@@ -40,15 +62,17 @@ MinionPoller = {
           $("#bootstrap").prop('disabled', false);
         }
 
+        $('.assigned-count').text(minions.length);
+        $('.master-count').text(MinionPoller.selectedMasters.length);
+
         if (unassignedMinions.length > 0) {
           if ($("#node-count").length > 0) {
             $("#node-count").text(unassignedMinions.length + " nodes found");
           } else {
-            $('#unassigned_count').html(unassignedMinions.length + " \
-            <strong>new</strong> nodes are available but have not been added to the cluster yet");
+            $('.unassigned-count').text(unassignedMinions.length);
           }
         } else {
-          $('#unassigned_count').html('');
+          $('.unassigned-count').text(0);
         }
       }
     });
