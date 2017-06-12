@@ -67,9 +67,7 @@ class SetupController < ApplicationController
   end
 
   def update_nodes_params
-    roles_params = params.require(:roles)
-    roles_params[:worker] = (roles_params[:worker] || []) - roles_params[:master]
-    roles_params
+    params.require(:roles)
   end
 
   def failed_assigned_nodes(assigned)
