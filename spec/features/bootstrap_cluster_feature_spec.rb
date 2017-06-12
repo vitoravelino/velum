@@ -33,7 +33,7 @@ feature "Bootstrap cluster feature" do
         # select master minion0.k8s.local
         find("#roles_master_#{minions[0].id}").click
         # select node minion1.k8s.local
-        find("#roles_worker_#{minions[1].id}").click
+        find("#roles_minion_#{minions[1].id}").click
       end
 
       click_button "Bootstrap cluster"
