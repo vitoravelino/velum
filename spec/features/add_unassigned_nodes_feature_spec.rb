@@ -41,10 +41,7 @@ feature "Add unassigned nodes" do
 
     click_button "Add nodes"
     using_wait_time 10 do
-      expect do
-        page.to have_content(minions[2].fqdn)
-        page.not_to have_content(minions[3].fqdn)
-      end
+      expect(page).to have_content(minions[2].fqdn).and have_no_content(minions[3].fqdn)
     end
   end
 
@@ -56,10 +53,7 @@ feature "Add unassigned nodes" do
 
     click_button "Add nodes"
     using_wait_time 10 do
-      expect do
-        page.to have_content(minions[2].fqdn)
-        page.to have_content(minions[3].fqdn)
-      end
+      expect(page).to have_content(minions[2].fqdn).and have_content(minions[3].fqdn)
     end
   end
   # rubocop:enable RSpec/ExampleLength
