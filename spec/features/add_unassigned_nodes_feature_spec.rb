@@ -16,7 +16,7 @@ feature "Add unassigned nodes" do
     setup_stubbed_update_status!
     setup_stubbed_pending_minions!
 
-    [:minion, :master].each do |role|
+    [:worker, :master].each do |role|
       allow_any_instance_of(Velum::SaltMinion).to receive(:assign_role).with(role)
         .and_return(role)
     end

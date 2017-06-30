@@ -23,7 +23,7 @@ feature "Bootstrap cluster feature" do
 
     before do
       # mock salt methods
-      [:minion, :master].each do |role|
+      [:worker, :master].each do |role|
         allow_any_instance_of(Velum::SaltMinion).to receive(:assign_role).with(role)
           .and_return(role)
       end
@@ -87,7 +87,7 @@ feature "Bootstrap cluster feature" do
         expect(page).to have_content("Summary")
         expect(page).to have_content(minions[0].fqdn)
         expect(page).to have_content(minions[1].fqdn)
-        expect(page).not_to have_content(minions[2].fqdn)
+        expect(page).to have_content(minions[2].fqdn)
         expect(page).not_to have_content(minions[3].fqdn)
       end
     end
@@ -127,7 +127,7 @@ feature "Bootstrap cluster feature" do
   scenario "An user sees 'No nodes found'", js: true do
     expect(page).to have_content("No nodes found")
     # bootstrap cluster button disabled
-    expect(page).to have_css("#bootstrap[disabled]")
+    expect(page).to have_button(value: "Bootstrap cluster", disabled: true)
   end
 end
 # rubocop:enable RSpec/AnyInstance
