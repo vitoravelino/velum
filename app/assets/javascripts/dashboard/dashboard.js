@@ -4,6 +4,7 @@ State = {
   assignableErrors: [],
   pendingRemovalMinionId: null,
   hasPendingStateNode: false,
+  lastOrchestration: null,
 },
 
 MinionPoller = {
@@ -149,7 +150,7 @@ MinionPoller = {
         }
 
         State.minions = minions;
-        State.lastOrchestrationAt = data.last_orchestration_at;
+        State.lastOrchestration = data.last_orchestration;
 
         var pendingStateMinion = minions.find(function (minion) {
           return minion.highstate == "pending";
@@ -214,6 +215,7 @@ MinionPoller = {
 
         MinionPoller.handleAdminUpdate(data.admin || {});
         MinionPoller.handleRetryableOrchestrations(data);
+        MinionPoller.handleOrchestrationStatus();
 
         handleBootstrapErrors();
         handleUnsupportedClusterConfiguration();
@@ -291,6 +293,26 @@ MinionPoller = {
     ';
   },
 
+  handleOrchestrationStatus: function() {
+    if (!State.lastOrchestration) {
+      return;
+    }
+
+    $('.orchestration-status').removeClass('failed succeeded in_progress text-sucess text-danger');
+    $('.orchestration-status').addClass(State.lastOrchestration.status);
+
+    switch (State.lastOrchestration.status) {
+      case 'succeeded':
+        $('.orchestration-status').addClass('text-success');
+        break;
+      case 'failed':
+        $('.orchestration-status').addClass('text-danger');
+        break;
+      default:
+        break;
+    }
+  },
+
   handleAdminUpdate: function(admin) {
     var $notification = $('.admin-outdated-notification');
     var failedToUpdate = admin.tx_update_reboot_needed && State.minions.filter(function (m) {
@@ -340,7 +362,7 @@ MinionPoller = {
     var cachedFailedLastOrchestration = window.localStorage.getItem('failedLastOrchestrationAt');
 
     if ($('.failed-bootstrap-alert').length ||
-        cachedFailedLastOrchestration === State.lastOrchestrationAt) {
+        (State.lastOrchestration && cachedFailedLastOrchestration === State.lastOrchestration.created_at)) {
       return;
     }
 
@@ -348,7 +370,7 @@ MinionPoller = {
 
     window.localStorage.removeItem('failedLastOrchestrationAt');
     $alert.on('closed.bs.alert', function () {
-      window.localStorage.setItem('failedLastOrchestrationAt', State.lastOrchestrationAt);
+      window.localStorage.setItem('failedLastOrchestrationAt', State.lastOrchestration.created_at);
       $alert.off('closed.bs.alert');
     })
   },
